@@ -137,29 +137,30 @@ const Orders = () => {
                                         <span className="font-black text-gray-900 text-xl">₹{order.totalPrice}</span>
                                     </td>
                                     <td className="p-8">
-                                        <select
-                                            value={order.paymentStatus}
+                                        <select value={order.paymentStatus} disabled={order.paymentStatus === "Paid"}   
                                             onChange={(e) => handlePaymentUpdate(order._id, e.target.value)}
-                                            className={`outline-none text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl border appearance-none cursor-pointer ${
-                                                order.paymentStatus === 'Paid' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'
-                                            }`}
-                                        >
+                                            className={`outline-none text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl border appearance-none ${
+                                                order.paymentStatus === 'Paid'
+                                                    ? 'bg-green-50 text-green-700 border-green-100'  
+                                                    : order.paymentStatus === 'Pending'
+                                                    ? 'bg-red-50 text-red-700 border-red-100'
+                                                    : 'bg-green-50 text-green-700 border-green-100'
+                                                }`}>
                                             <option value="Pending">Pending</option>
                                             <option value="Paid">Paid</option>
                                         </select>
                                     </td>
                                     <td className="p-8">
                                         <div className="flex items-center gap-4">
-                                            <select
-                                                value={order.orderStatus}
+                                            <select value={order.orderStatus} disabled={order.orderStatus === "Completed" || order.orderStatus === "Cancelled"}   // 🔥 lock after final state
                                                 onChange={(e) => handleStatusUpdate(order._id, e.target.value)}
-                                                className={`outline-none text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl border appearance-none cursor-pointer ${
+                                                className={`outline-none text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl border appearance-none ${
                                                     order.orderStatus === 'Preparing' ? 'bg-orange-50 text-orange-700 border-orange-100' : 
                                                     order.orderStatus === 'Ready' ? 'bg-blue-50 text-blue-700 border-blue-100' : 
                                                     order.orderStatus === 'Completed' ? 'bg-green-50 text-green-700 border-green-100' : 
-                                                    'bg-red-50 text-red-700 border-red-100'
-                                                }`}
-                                            >
+                                                    order.orderStatus === 'Cancelled' ? 'bg-red-50 text-red-700 border-red-100' : 
+                                                    'bg-gray-100 text-gray-400 border-gray-200'
+                                                }`}>
                                                 <option value="Preparing">Preparing</option>
                                                 <option value="Ready">Ready</option>
                                                 <option value="Completed">Completed</option>

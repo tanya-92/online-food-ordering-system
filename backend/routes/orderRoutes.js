@@ -1,6 +1,11 @@
 import express from 'express';
 const router = express.Router();
-import { placeOrder, getMyOrders, getCanteenOrders, deleteAllOrders } from '../controllers/orderController.js';
+import {   placeOrder, 
+  getMyOrders, 
+  getCanteenOrders, 
+  updateOrderStatus, 
+  updatePaymentStatus, 
+  deleteAllOrders  } from '../controllers/orderController.js';
 import { protect, owner } from '../middleware/authMiddleware.js';
 
 router.route('/').post(protect, placeOrder);

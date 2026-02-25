@@ -5,6 +5,7 @@ import { getMyCanteen, getOwnerOrders, addCanteen } from '../../services/api';
 
 const OwnerDashboard = () => {
   const [canteen, setCanteen] = useState(null);
+  const [orders, setOrders] = useState([]);
   const [stats, setStats] = useState({ totalOrders: 0, pendingOrders: 0, revenue: 0 });
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -22,8 +23,9 @@ const OwnerDashboard = () => {
             setCanteen(myCanteen);
             // Fetch orders to calculate stats
             const orders = await getOwnerOrders();
-            const pending = orders.filter(o => o.status !== 'Delivered').length;
-            const revenue = orders.reduce((acc, o) => acc + o.total, 0);
+            setOrders(orders);
+            const pending = orders.filter(o => o.orderStatus === 'Preparing' || o.orderStatus === 'Ready').length;
+            const revenue = orders.reduce((acc, o) => acc + (Number(o.totalPrice) || 0), 0);
             setStats({
                 totalOrders: orders.length,
                 pendingOrders: pending,
@@ -146,6 +148,121 @@ const OwnerDashboard = () => {
                             <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Revenue</p>
                             <h3 className="text-3xl md:text-4xl font-black text-gray-900">₹{stats.revenue}</h3>
                         </div>
+                    </div>
+                </div>
+
+                {/* New Section: Status Highlights */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                    <div className="bg-orange-50/50 border border-orange-100 p-6 rounded-3xl flex flex-col items-center justify-center text-center">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-orange-600 mb-2">Preparing</span>
+                        <h4 className="text-2xl font-black text-gray-900">{orders.filter(o => o.orderStatus === 'Preparing').length}</h4>
+                    </div>
+                    <div className="bg-blue-50/50 border border-blue-100 p-6 rounded-3xl flex flex-col items-center justify-center text-center">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-2">Ready</span>
+                        <h4 className="text-2xl font-black text-gray-900">{orders.filter(o => o.orderStatus === 'Ready').length}</h4>
+                    </div>
+                    <div className="bg-green-50/50 border border-green-100 p-6 rounded-3xl flex flex-col items-center justify-center text-center">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-green-600 mb-2">Delivered</span>
+                        <h4 className="text-2xl font-black text-gray-900">{orders.filter(o => o.orderStatus === 'Completed').length}</h4>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mb-10">
+                    {/* Recent Orders List (Left Column) */}
+                    <div className="lg:col-span-2 bg-white/70 backdrop-blur-md rounded-[2.5rem] p-8 shadow-sm border border-white">
+                        <div className="flex justify-between items-center mb-8">
+                            <h2 className="text-2xl font-black text-gray-900 tracking-tighter">Recent Orders</h2>
+                            <span className="text-[10px] font-black bg-gray-100 px-3 py-1 rounded-full uppercase tracking-widest text-gray-500">Live View</span>
+                        </div>
+                        <div className="space-y-4">
+                            {orders.length > 0 ? (
+                                orders.slice(0, 5).map((order) => (
+                                    <div key={order._id} className="flex items-center justify-between p-4 bg-white/50 rounded-2xl border border-gray-50 group hover:border-orange-200 transition-all">
+                                        <div className="flex items-center gap-4">
+                                            <span className="font-mono font-black text-gray-900 bg-gray-100 px-3 py-1.5 rounded-lg text-sm">#{order.token}</span>
+                                            <div>
+                                                <p className="font-bold text-gray-800 text-sm line-clamp-1">{order.items.map(i => i.name).join(', ')}</p>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">₹{order.totalPrice}</p>
+                                            </div>
+                                        </div>
+                                        <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${
+                                            order.orderStatus === 'Preparing' ? 'bg-orange-50 text-orange-600' :
+                                            order.orderStatus === 'Ready' ? 'bg-blue-50 text-blue-600' :
+                                            order.orderStatus === 'Completed' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
+                                        }`}>
+                                            {order.orderStatus}
+                                        </span>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-center py-10 text-gray-400 font-medium italic">No recent orders</p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Activity Feed (Right Column) */}
+                    <div className="bg-white/70 backdrop-blur-md rounded-[2.5rem] p-8 shadow-sm border border-white">
+                        <h2 className="text-2xl font-black text-gray-900 tracking-tighter mb-8">Recent Activity</h2>
+                        <div className="space-y-6 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100">
+                            {orders.length > 0 ? (
+                                orders.slice(0, 5).map((order, idx) => (
+                                    <div key={idx} className="flex gap-4 relative">
+                                        <div className={`w-6 h-6 rounded-full border-4 border-white shadow-sm shrink-0 z-10 ${
+                                            order.orderStatus === 'Completed' ? 'bg-green-500' :
+                                            order.orderStatus === 'Preparing' ? 'bg-orange-500' : 'bg-blue-500'
+                                        }`} />
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-800">Order #{order.token} {
+                                                order.orderStatus === 'Completed' ? 'Delivered' : 
+                                                order.orderStatus === 'Ready' ? 'is Ready' : 
+                                                'Placed'
+                                            }</p>
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">
+                                                {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-gray-400 font-medium italic py-4">No recent activity</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Revenue Analysis (Simple Chart) */}
+                <div className="bg-white/70 backdrop-blur-md rounded-[2.5rem] p-8 shadow-sm border border-white mb-10">
+                    <h2 className="text-2xl font-black text-gray-900 tracking-tighter mb-8">Revenue Analysis</h2>
+                    <div className="h-48 flex items-end gap-2 sm:gap-4 px-4 overflow-x-auto">
+                        {orders.length > 0 ? (() => {
+                            const last7Days = [...Array(7)].map((_, i) => {
+                                const d = new Date();
+                                d.setDate(d.getDate() - i);
+                                return d.toISOString().split('T')[0];
+                            }).reverse();
+
+                            const dailyRevenue = last7Days.map(date => {
+                                return orders
+                                    .filter(o => o.createdAt && o.createdAt.split('T')[0] === date)
+                                    .reduce((sum, o) => sum + (Number(o.totalPrice) || 0), 0);
+                            });
+
+                            const maxRev = Math.max(...dailyRevenue) || 1;
+
+                            return dailyRevenue.map((rev, i) => (
+                                <div key={i} className="flex-1 min-w-[30px] flex flex-col items-center gap-3 group">
+                                    <div className="w-full relative bg-gray-50 rounded-lg overflow-hidden h-32 flex items-end">
+                                        <div 
+                                            className="w-full bg-orange-400 group-hover:bg-orange-500 transition-all duration-500 rounded-t-sm" 
+                                            style={{ height: `${(rev / maxRev) * 100}%` }}
+                                        />
+                                    </div>
+                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">
+                                        {rev > 0 ? `₹${rev}` : '-'}
+                                    </span>
+                                </div>
+                            ));
+                        })() : <div className="w-full h-full flex items-center justify-center text-gray-400 font-medium italic">Revenue data unavailable</div>}
                     </div>
                 </div>
             </>

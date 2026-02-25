@@ -61,7 +61,7 @@ const placeOrder = asyncHandler(async (req, res) => {
             totalPrice,
             token: tokenNumber,
             orderStatus: 'Preparing',
-            paymentStatus: 'Paid'
+            paymentStatus: 'Pending'
         });
 
         const savedOrder = await order.save();

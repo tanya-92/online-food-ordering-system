@@ -168,3 +168,39 @@ export const getOwnerOrders = async (canteenId) => {
     return [];
   }
 };
+
+export const updateOrderStatus = async (orderId, status) => {
+  try {
+    const { data } = await api.put(`/orders/${orderId}/order-status`, { status });
+    return { success: true, order: data };
+  } catch (error) {
+    return { success: false, message: error.response?.data?.message || 'Failed to update order status' };
+  }
+};
+
+export const updatePaymentStatus = async (orderId, status) => {
+  try {
+    const { data } = await api.put(`/orders/${orderId}/payment-status`, { status });
+    return { success: true, order: data };
+  } catch (error) {
+    return { success: false, message: error.response?.data?.message || 'Failed to update payment status' };
+  }
+};
+
+export const deleteAllOrders = async () => {
+  try {
+    const { data } = await api.delete('/orders/clear');
+
+    return {
+      success: true,
+      message: data.message
+    };
+
+  } catch (error) {
+    console.error("DELETE ERROR:", error.response?.data || error.message);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Delete failed"
+    };
+  }
+};

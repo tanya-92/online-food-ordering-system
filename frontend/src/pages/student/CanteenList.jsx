@@ -47,6 +47,23 @@ function CanteenList({ searchQuery }) {
     return matchName || matchLocation || matchFood;
   });
 
+  const activeCanteensCount = canteens.reduce((count, canteen) => {
+    const now = new Date();
+    const current = now.getHours() * 60 + now.getMinutes();
+    const [openH, openM] = canteen.openingTime.split(":").map(Number);
+    const [closeH, closeM] = canteen.closingTime.split(":").map(Number);
+    const openTime = openH * 60 + openM;
+    const closeTime = closeH * 60 + closeM;
+
+    let isOpen = false;
+    if (openTime < closeTime) {
+      isOpen = current >= openTime && current <= closeTime;
+    } else {
+      isOpen = current >= openTime || current <= closeTime;
+    }
+    return isOpen ? count + 1 : count;
+  }, 0);
+
   if (loading) {
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -89,7 +106,7 @@ function CanteenList({ searchQuery }) {
                 {!searchQuery && (
                     <span className="bg-green-50 text-green-700 text-sm font-bold px-5 py-2.5 rounded-2xl uppercase tracking-wider border border-green-100 shadow-sm flex items-center gap-2">
                         <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                        {canteens.length} Canteens Active
+                        {activeCanteensCount} {activeCanteensCount === 1 ? "Canteen" : "Canteens"} Active
                     </span>
                 )}
             </div>

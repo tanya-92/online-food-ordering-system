@@ -228,7 +228,7 @@ const handleImageUpload = (e) => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                 {items.map((item) => (
                   <div key={item._id} className="group bg-white/70 backdrop-blur-md rounded-[2rem] overflow-hidden border border-white hover:border-orange-200 hover:shadow-2xl transition-all duration-500 flex flex-col">
-                    <div className="relative h-44 overflow-hidden">
+                    <div className="relative h-[220px] overflow-hidden rounded-t-[16px]">
                       <img src={item.image} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                       <div className="absolute top-4 right-4">
                         <button 

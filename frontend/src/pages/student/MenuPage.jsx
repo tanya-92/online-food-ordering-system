@@ -1,15 +1,24 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import FoodCard from "../../components/FoodCard";
 import { getItemsByCanteen } from "../../services/api";
 import { getAllCanteens } from "../../services/api";
 
 const MenuPage = ({ addToCart, cart }) => {
   const { canteenId } = useParams();
+  const navigate = useNavigate();
   const [canteenInfo, setCanteenInfo] = useState(null);
-
   const [menuItems, setMenuItems] = useState([]);
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
 
+  const handleBack = () => {
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1);
+    } else {
+      navigate("/student/canteens");
+    }
+  };
 
   const now = new Date();
   const current = now.getHours() * 60 + now.getMinutes();
@@ -46,6 +55,11 @@ useEffect(() => {
   if (canteenId) fetchMenu();
 }, [canteenId]);
 
+  const filteredItems = menuItems.filter(item => {
+      const matchesCategory = activeCategory === "All" || item.category === activeCategory;
+      const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 pb-32 md:pb-24">
@@ -57,24 +71,20 @@ useEffect(() => {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/10 to-transparent" />
 
-        <div className="absolute top-0 left-0 w-full p-4 md:p-6 z-20">
-          <Link
-            to="/student/canteens"
-            className="text-white/80 hover:text-white text-xs md:text-sm font-bold flex items-center gap-2 w-fit bg-black/20 backdrop-blur-md px-3 md:px-5 py-2 md:py-2.5 rounded-full transition-all hover:bg-black/40 border border-white/10"
+        <div className="absolute top-0 left-0 w-fit p-4 md:p-6 z-30">
+          <button
+            onClick={handleBack}
+            className="text-white/80 hover:text-white text-xs md:text-sm font-bold flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 md:px-5 py-2 md:py-2.5 rounded-full transition-all hover:bg-black/40 border border-white/10 shadow-lg"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             <span className="hidden sm:inline">Back</span>
-          </Link>
+          </button>
         </div>
 
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 md:p-12 text-white z-20">
-          <span className={`inline-block px-4 py-1.5 rounded-full backdrop-blur-md border text-[10px] font-black uppercase tracking-widest mb-4 ${
-            isOpen ? "bg-green-500/20 border-green-500/30 text-green-300" : "bg-red-500/20 border-red-500/30 text-red-300"
-          }`}>
-            {isOpen ? "Ordering Open" : "Ordering Closed"}
-          </span>
+          
           <h1 className="text-4xl md:text-7xl font-black mb-4 tracking-tighter drop-shadow-2xl">{canteenInfo?.name}</h1>
           <p className="text-gray-300 flex items-center gap-2 text-sm md:text-xl font-medium opacity-90">
             <svg className="w-4 h-4 md:w-5 md:h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,32 +96,62 @@ useEffect(() => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 -mt-8 md:-mt-12 relative z-30">
-        {/* Category Tabs (Scrollable Mobile) */}
-        <div className="bg-white/80 backdrop-blur-xl p-2 rounded-3xl shadow-xl flex gap-2 overflow-x-auto mb-8 md:mb-12 border border-gray-100 scrollbar-hide">
-          {["All", "Snacks", "Meals", "Beverages"].map((cat) => (
-            <button
-              key={cat}
-              className={`px-6 md:px-10 py-3 md:py-4 rounded-2xl text-[13px] md:text-sm font-black whitespace-nowrap transition-all duration-300
-                    ${cat === "All" ? "bg-gray-900 text-white shadow-xl shadow-gray-900/20" : "bg-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-900"}`}
-            >
-              {cat}
-            </button>
-          ))}
+        <div className="flex flex-col md:flex-row gap-4 mb-8 md:mb-12">
+            {/* Category Tabs */}
+            <div className="flex-1 bg-white/80 backdrop-blur-xl p-2 rounded-3xl shadow-xl flex gap-2 overflow-x-auto border border-gray-100 scrollbar-hide">
+              {["All", "Snacks", "Meals", "Beverages"].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`px-6 md:px-10 py-3 md:py-4 rounded-2xl text-[13px] md:text-sm font-black whitespace-nowrap transition-all duration-300
+                        ${activeCategory === cat ? "bg-gray-900 text-white shadow-xl shadow-gray-900/20" : "bg-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-900"}`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Local Search Input */}
+            <div className="w-full md:w-80 bg-white/80 backdrop-blur-xl p-2 rounded-3xl shadow-xl border border-gray-100 flex items-center">
+                <div className="pl-4 text-gray-400">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <input 
+                    type="text"
+                    placeholder="Search in menu..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-transparent border-none focus:ring-0 px-4 py-2 font-bold text-gray-700 placeholder-gray-400"
+                />
+            </div>
         </div>
 
         {/* Menu Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-10">
-          {menuItems.map((item) => (
+          {filteredItems.map((item) => (
             <FoodCard key={item._id} item={item} onAdd={addToCart} />
           ))}
         </div>
 
-        {menuItems.length === 0 && (
+        {filteredItems.length === 0 && (
           <div className="text-center py-24 bg-white rounded-[3rem] border border-dashed border-gray-200">
              <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                {menuItems.length === 0 ? (
+                    <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                    <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                )}
              </div>
-            <p className="text-gray-500 text-lg font-bold tracking-tight">Fetching tomorrow's specials...</p>
+            <h3 className="text-xl font-bold text-gray-900">
+                {menuItems.length === 0 ? "Fetching tomorrow's specials..." : "No matches found"}
+            </h3>
+            <p className="text-gray-500 font-medium mt-1 px-4">
+                {menuItems.length === 0 ? "Hang tight, we're loading the menu." : "Try adjusting your search or category filter!"}
+            </p>
           </div>
         )}
       </div>

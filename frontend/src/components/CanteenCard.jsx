@@ -1,6 +1,7 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function CanteenCard({ canteen }) {
+  const navigate = useNavigate();
   const now = new Date();
   const current = now.getHours() * 60 + now.getMinutes();
 
@@ -10,18 +11,37 @@ function CanteenCard({ canteen }) {
   const openTime = openH * 60 + openM;
   const closeTime = closeH * 60 + closeM;
 
-  const isOpen = current >= openTime && current <= closeTime;
+  let isOpen = false;
+
+if (openTime < closeTime) {
+  isOpen = current >= openTime && current <= closeTime;
+} else {
+  isOpen = current >= openTime || current <= closeTime;
+}
+
+  const handleCardClick = () => {
+    if (isOpen) {
+      navigate(`/student/canteens/${canteen._id}/menu`);
+    }
+  };
 
   return (
-    <div className="group relative bg-white/70 backdrop-blur-md rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 border border-white/50 hover:-translate-y-2 active:scale-95">
+    <div 
+      onClick={handleCardClick}
+      className={`group relative bg-white/70 backdrop-blur-md rounded-[2.5rem] overflow-hidden shadow-sm transition-all duration-500 border border-white/50 
+        ${isOpen 
+          ? "hover:shadow-2xl hover:-translate-y-2 active:scale-95 cursor-pointer" 
+          : "grayscale opacity-70 cursor-not-allowed shadow-none"
+        }`}
+    >
       {/* Image Container */}
       <div className="relative h-52 md:h-56 overflow-hidden">
         <img
           src={`${canteen.image}?q=80&w=800&auto=format&fit=crop`}
           alt={canteen.name}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          className={`w-full h-full object-cover transition-transform duration-700 ${isOpen ? "group-hover:scale-110" : ""}`}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent transition-opacity duration-500 ${isOpen ? "opacity-0 group-hover:opacity-100" : "opacity-0"}`} />
         
         {/* Status Badge */}
         <div className="absolute top-4 right-4">
@@ -35,7 +55,7 @@ function CanteenCard({ canteen }) {
         </div>
 
         {/* Floating Time Info */}
-        <div className="absolute bottom-4 left-4 right-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+        <div className={`absolute bottom-4 left-4 right-4 transition-all duration-500 ${isOpen ? "translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100" : "opacity-100 translate-y-0"}`}>
            <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-3 flex justify-between items-center text-white">
               <span className="text-[10px] font-black uppercase tracking-tighter opacity-70">Hours</span>
               <span className="text-xs font-black">{canteen.openingTime} - {canteen.closingTime}</span>
@@ -46,7 +66,7 @@ function CanteenCard({ canteen }) {
       {/* Content */}
       <div className="p-6 md:p-8">
         <div className="mb-6">
-            <h3 className="text-2xl font-black text-gray-900 group-hover:text-orange-600 transition-colors tracking-tight">
+            <h3 className={`text-2xl font-black text-gray-900 transition-colors tracking-tight ${isOpen ? "group-hover:text-orange-600" : ""}`}>
               {canteen.name}
             </h3>
             <p className="text-gray-500 text-sm font-bold flex items-center gap-2 mt-1">
@@ -58,18 +78,20 @@ function CanteenCard({ canteen }) {
             </p>
         </div>
 
-        <Link
-          to={`/student/canteens/${canteen._id}/menu`}
-          className="w-full py-4 bg-gray-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-orange-600 hover:shadow-xl hover:shadow-orange-500/20 transition-all duration-300 flex items-center justify-center gap-2 group/btn"
+        <div
+          className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 
+            ${isOpen 
+              ? "bg-gray-900 text-white hover:bg-orange-600 hover:shadow-xl hover:shadow-orange-500/20" 
+              : "bg-gray-200 text-gray-400 cursor-not-allowed"
+            }`}
         >
           View Menu
-          <svg className="w-4 h-4 transform transition-transform group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className={`w-4 h-4 transform transition-transform ${isOpen ? "group-hover:translate-x-1" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
           </svg>
-        </Link>
+        </div>
       </div>
     </div>
   );
 }
-
 export default CanteenCard;

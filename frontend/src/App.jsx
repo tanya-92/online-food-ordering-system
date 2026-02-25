@@ -10,6 +10,7 @@ import CanteenList from "./pages/student/CanteenList";
 import MenuPage from "./pages/student/MenuPage";
 import Cart from "./pages/student/Cart";
 import OrderSuccess from "./pages/student/OrderSuccess";
+import OrderHistory from "./pages/student/OrderHistory";
 
 import OwnerDashboard from "./pages/owner/OwnerDashboard";
 
@@ -65,9 +66,20 @@ function App() {
   // Calculate total items forr badge
   const cartItemCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
+  const isMenuPage = location.pathname.includes("/menu");
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-gray-50 to-gray-100 font-sans text-gray-900">
-      {!hideNavbar && <Navbar cartCount={cartItemCount} user={user} setUser={setUser} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />}
+      {!hideNavbar && (
+        <Navbar 
+          cartCount={cartItemCount} 
+          user={user} 
+          setUser={setUser} 
+          searchQuery={searchQuery} 
+          setSearchQuery={setSearchQuery} 
+          hideSearch={isMenuPage}
+        />
+      )}
 
       <div className="w-full">
         <Routes>
@@ -80,6 +92,7 @@ function App() {
           <Route path="/student/canteens/:canteenId/menu" element={<MenuPage addToCart={addToCart} cart={cart} />} />
           <Route path="/student/cart" element={<Cart cart={cart} updateQuantity={updateQuantity} clearCart={clearCart} />} />
           <Route path="/student/order-success" element={<OrderSuccess />} />
+          <Route path="/student/orders" element={<OrderHistory />} />
 
           {/* Owner flow */}
           <Route path="/owner/dashboard" element={<OwnerDashboard />} />

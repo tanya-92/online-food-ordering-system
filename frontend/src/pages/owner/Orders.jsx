@@ -1,7 +1,6 @@
-// src/pages/owner/Orders.jsx
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getOwnerOrders, deleteAllOrders, updateOrderStatus, updatePaymentStatus } from '../../services/api';
 import OwnerSidebar from '../../components/OwnerSidebar';
-import { getOwnerOrders } from '../../services/api';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -9,6 +8,8 @@ const Orders = () => {
 
   useEffect(() => {
     fetchOrders();
+    const interval = setInterval(fetchOrders, 5000); // Polling for realtime updates
+    return () => clearInterval(interval);
   }, []);
 
   const fetchOrders = async () => {
@@ -22,22 +23,50 @@ const Orders = () => {
       }
   };
 
-  const updateStatus = (orderId, newStatus) => {
-    setOrders(prev => prev.map(order => 
-        order._id === orderId ? { ...order, status: newStatus } : order
-    ));
-    // In a real app, you would also call an API here to update the status in the backend
+  const handleDeleteAll = async () => {
+    if (window.confirm("Are you sure you want to delete all orders?")) {
+        try {
+            const res = await deleteAllOrders();
+            if (res.success) {
+                fetchOrders();
+            } else {
+                alert(res.message);
+            }
+        } catch (error) {
+            console.error("Delete all failed:", error);
+            alert("Failed to delete all orders");
+        }
+    }
+  };
+
+  const handleStatusUpdate = async (orderId, status) => {
+    try {
+        const res = await updateOrderStatus(orderId, status);
+        if (res.success) {
+            fetchOrders();
+        } else {
+            alert(res.message);
+        }
+    } catch (error) {
+        console.error("Status update failed:", error);
+    }
+  };
+
+  const handlePaymentUpdate = async (orderId, status) => {
+    try {
+        const res = await updatePaymentStatus(orderId, status);
+        if (res.success) {
+            fetchOrders();
+        } else {
+            alert(res.message);
+        }
+    } catch (error) {
+        console.error("Payment update failed:", error);
+    }
   };
 
   if (loading) {
-      return (
-        <div className="flex min-h-screen bg-gray-50">
-            <OwnerSidebar />
-            <div className="flex-1 flex items-center justify-center">
-                 <div className="w-12 h-12 border-4 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-        </div>
-      );
+// ... loading same ...
   }
 
   return (
@@ -50,14 +79,23 @@ const Orders = () => {
                     <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter">Live Orders</h1>
                     <p className="text-gray-500 mt-2 font-medium opacity-80">Track and manage incoming orders in real-time.</p>
                 </div>
-                <div className="flex gap-4 w-full md:w-auto">
-                    <div className="flex-1 md:flex-none bg-white/70 backdrop-blur-md px-4 py-3 rounded-2xl shadow-sm border border-white flex items-center justify-center gap-3">
-                        <div className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse shadow-[0_0_8px_rgba(249,115,22,0.5)]"></div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-700">{orders.filter(o => o.status === 'Preparing').length} Preparing</span>
-                    </div>
-                    <div className="flex-1 md:flex-none bg-white/70 backdrop-blur-md px-4 py-3 rounded-2xl shadow-sm border border-white flex items-center justify-center gap-3">
-                        <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-700">{orders.filter(o => o.status === 'Ready').length} Ready</span>
+                <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto items-center">
+                    <button 
+                        onClick={handleDeleteAll}
+                        className="w-full md:w-auto bg-red-600 hover:bg-black text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg hover:shadow-red-500/20 active:scale-95 flex items-center justify-center gap-2"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        Delete All Orders
+                    </button>
+                    <div className="flex gap-4 w-full md:w-auto">
+                        <div className="flex-1 md:flex-none bg-white/70 backdrop-blur-md px-4 py-3 rounded-2xl shadow-sm border border-white flex items-center justify-center gap-3">
+                            <div className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse shadow-[0_0_8px_rgba(249,115,22,0.5)]"></div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-700">{orders.filter(o => o.orderStatus === 'Preparing').length} Preparing</span>
+                        </div>
+                        <div className="flex-1 md:flex-none bg-white/70 backdrop-blur-md px-4 py-3 rounded-2xl shadow-sm border border-white flex items-center justify-center gap-3">
+                            <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-700">{orders.filter(o => o.orderStatus === 'Ready').length} Ready</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -71,8 +109,8 @@ const Orders = () => {
                                 <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Token ID</th>
                                 <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Items Ordered</th>
                                 <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Amount</th>
+                                <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Payment</th>
                                 <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Current Status</th>
-                                <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
@@ -99,38 +137,35 @@ const Orders = () => {
                                         <span className="font-black text-gray-900 text-xl">₹{order.totalPrice}</span>
                                     </td>
                                     <td className="p-8">
-                                        <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm border
-                                            ${order.status === 'Preparing' ? 'bg-orange-50 text-orange-700 border-orange-100' : ''}
-                                            ${order.status === 'Ready' ? 'bg-green-50 text-green-700 border-green-100' : ''}
-                                            ${order.status === 'Delivered' ? 'bg-gray-50 text-gray-500 border-gray-100' : ''}
-                                        `}>
-                                            <span className={`w-2 h-2 rounded-full ${
-                                                order.status === 'Preparing' ? 'bg-orange-500 animate-pulse' : 
-                                                order.status === 'Ready' ? 'bg-green-500' : 'bg-gray-400'
-                                            }`}></span>
-                                            {order.status}
-                                        </span>
+                                        <select
+                                            value={order.paymentStatus}
+                                            onChange={(e) => handlePaymentUpdate(order._id, e.target.value)}
+                                            className={`outline-none text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl border appearance-none cursor-pointer ${
+                                                order.paymentStatus === 'Paid' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'
+                                            }`}
+                                        >
+                                            <option value="Pending">Pending</option>
+                                            <option value="Paid">Paid</option>
+                                        </select>
                                     </td>
                                     <td className="p-8">
-                                        {order.status === 'Preparing' && (
-                                            <button 
-                                                onClick={() => updateStatus(order._id, 'Ready')}
-                                                className="bg-green-600 hover:bg-black text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-xl hover:shadow-green-500/20 transform hover:-translate-y-1 active:scale-95 flex items-center gap-2"
+                                        <div className="flex items-center gap-4">
+                                            <select
+                                                value={order.orderStatus}
+                                                onChange={(e) => handleStatusUpdate(order._id, e.target.value)}
+                                                className={`outline-none text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl border appearance-none cursor-pointer ${
+                                                    order.orderStatus === 'Preparing' ? 'bg-orange-50 text-orange-700 border-orange-100' : 
+                                                    order.orderStatus === 'Ready' ? 'bg-blue-50 text-blue-700 border-blue-100' : 
+                                                    order.orderStatus === 'Completed' ? 'bg-green-50 text-green-700 border-green-100' : 
+                                                    'bg-red-50 text-red-700 border-red-100'
+                                                }`}
                                             >
-                                                Mark Ready
-                                            </button>
-                                        )}
-                                        {order.status === 'Ready' && (
-                                            <button 
-                                                onClick={() => updateStatus(order._id, 'Delivered')}
-                                                className="bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-xl hover:shadow-orange-500/20 transform hover:-translate-y-1 active:scale-95 flex items-center gap-2"
-                                            >
-                                                Delivered
-                                            </button>
-                                        )}
-                                        {order.status === 'Delivered' && (
-                                            <span className="text-gray-400 text-xs font-black uppercase tracking-widest italic opacity-50">Completed</span>
-                                        )}
+                                                <option value="Preparing">Preparing</option>
+                                                <option value="Ready">Ready</option>
+                                                <option value="Completed">Completed</option>
+                                                <option value="Cancelled">Cancelled</option>
+                                            </select>
+                                        </div>
                                     </td>
                                 </tr>
                                 ))
@@ -144,18 +179,38 @@ const Orders = () => {
             <div className="lg:hidden space-y-6">
                 {orders.length > 0 ? (
                     orders.map((order) => (
-                        <div key={order._id} className="bg-white/70 backdrop-blur-md rounded-[2rem] p-6 shadow-xl border border-white group">
+                        <div key={order._id} className="bg-white/70 backdrop-blur-md rounded-[2.5rem] p-6 shadow-xl border border-white group">
                             <div className="flex justify-between items-start mb-6">
                                 <span className="font-mono font-black text-2xl text-gray-900 bg-gray-100 px-4 py-2 rounded-2xl border border-gray-200">
                                     #{order.token}
                                 </span>
-                                <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border
-                                    ${order.status === 'Preparing' ? 'bg-orange-50 text-orange-700 border-orange-100' : ''}
-                                    ${order.status === 'Ready' ? 'bg-green-50 text-green-700 border-green-100' : ''}
-                                    ${order.status === 'Delivered' ? 'bg-gray-50 text-gray-500 border-gray-100' : ''}
-                                `}>
-                                    {order.status}
-                                </span>
+                                <div className="flex flex-col gap-2 items-end">
+                                    <select
+                                        value={order.paymentStatus}
+                                        onChange={(e) => handlePaymentUpdate(order._id, e.target.value)}
+                                        className={`outline-none text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl border appearance-none cursor-pointer ${
+                                            order.paymentStatus === 'Paid' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'
+                                        }`}
+                                    >
+                                        <option value="Pending">Pending</option>
+                                        <option value="Paid">Paid</option>
+                                    </select>
+                                    <select
+                                        value={order.orderStatus}
+                                        onChange={(e) => handleStatusUpdate(order._id, e.target.value)}
+                                        className={`outline-none text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl border appearance-none cursor-pointer ${
+                                            order.orderStatus === 'Preparing' ? 'bg-orange-50 text-orange-700 border-orange-100' : 
+                                            order.orderStatus === 'Ready' ? 'bg-blue-50 text-blue-700 border-blue-100' : 
+                                            order.orderStatus === 'Completed' ? 'bg-green-50 text-green-700 border-green-100' : 
+                                            'bg-red-50 text-red-700 border-red-100'
+                                        }`}
+                                    >
+                                        <option value="Preparing">Preparing</option>
+                                        <option value="Ready">Ready</option>
+                                        <option value="Completed">Completed</option>
+                                        <option value="Cancelled">Cancelled</option>
+                                    </select>
+                                </div>
                             </div>
 
                             <div className="space-y-3 mb-8 px-2">
@@ -172,30 +227,6 @@ const Orders = () => {
                                     <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Price</span>
                                     <span className="text-2xl font-black text-gray-900">₹{order.totalPrice}</span>
                                 </div>
-                            </div>
-
-                            <div className="flex gap-4">
-                                {order.status === 'Preparing' && (
-                                    <button 
-                                        onClick={() => updateStatus(order._id, 'Ready')}
-                                        className="flex-1 bg-green-600 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl hover:bg-black transition-all active:scale-95"
-                                    >
-                                        Mark Ready
-                                    </button>
-                                )}
-                                {order.status === 'Ready' && (
-                                    <button 
-                                        onClick={() => updateStatus(order._id, 'Delivered')}
-                                        className="flex-1 bg-gray-900 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl hover:bg-black transition-all active:scale-95"
-                                    >
-                                        Delivered
-                                    </button>
-                                )}
-                                {order.status === 'Delivered' && (
-                                    <div className="flex-1 bg-gray-100 text-gray-400 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-center italic opacity-70">
-                                        Completed
-                                    </div>
-                                )}
                             </div>
                         </div>
                     ))

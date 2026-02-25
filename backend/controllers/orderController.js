@@ -14,7 +14,7 @@ const placeOrder = asyncHandler(async (req, res) => {
     const ordersByCanteen = {};
 
     items.forEach(item => {
-        const canteenId = item.canteen; 
+        const canteenId = item.canteen;
         if (!ordersByCanteen[canteenId]) {
             ordersByCanteen[canteenId] = [];
         }
@@ -27,7 +27,7 @@ const placeOrder = asyncHandler(async (req, res) => {
     for (const canteenId of Object.keys(ordersByCanteen)) {
         const canteenItems = ordersByCanteen[canteenId];
 
-        
+
         const totalPrice = canteenItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
         // Find last order for this canteen created TODAY
@@ -60,7 +60,8 @@ const placeOrder = asyncHandler(async (req, res) => {
             })),
             totalPrice,
             token: tokenNumber,
-            status: 'Paid'
+            orderStatus: 'Preparing',
+            paymentStatus: 'Paid'
         });
 
         const savedOrder = await order.save();
@@ -86,4 +87,47 @@ const getCanteenOrders = asyncHandler(async (req, res) => {
     res.json(orders);
 });
 
-export { placeOrder, getMyOrders, getCanteenOrders };
+const updateOrderStatus = asyncHandler(async (req, res) => {
+    const { status } = req.body;
+    const order = await Order.findById(req.params.id);
+
+    if (order) {
+        order.orderStatus = status;
+        const updatedOrder = await order.save();
+        res.json(updatedOrder);
+    } else {
+        res.status(404);
+        throw new Error('Order not found');
+    }
+});
+
+const updatePaymentStatus = asyncHandler(async (req, res) => {
+    const { status } = req.body;
+    const order = await Order.findById(req.params.id);
+
+    if (order) {
+        order.paymentStatus = status;
+        const updatedOrder = await order.save();
+        res.json(updatedOrder);
+    } else {
+        res.status(404);
+        throw new Error('Order not found');
+    }
+});
+
+
+const deleteAllOrders = asyncHandler(async (req, res) => {
+    const { canteenId } = req.params;
+
+    console.log("DELETE ALL HIT");
+    console.log("Canteen:", canteenId);
+
+    await Order.deleteMany({ canteen: canteenId });
+
+    res.status(200).json({
+        success: true,
+        message: "All orders deleted successfully"
+    });
+});
+
+export { placeOrder, getMyOrders, getCanteenOrders, updateOrderStatus, updatePaymentStatus, deleteAllOrders };

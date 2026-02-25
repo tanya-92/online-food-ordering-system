@@ -2,7 +2,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
-function Navbar({ cartCount = 0, user, setUser, searchQuery, setSearchQuery }) {
+function Navbar({ cartCount = 0, user, setUser, searchQuery, setSearchQuery, hideSearch }) {
   const navigate = useNavigate();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const userName = user?.name;
@@ -57,7 +57,7 @@ function Navbar({ cartCount = 0, user, setUser, searchQuery, setSearchQuery }) {
             </div>
 
             {/* 3. Search Bar (Centered) - STUDENT ONLY */}
-            {userRole !== "owner" && (
+            {userRole !== "owner" && !hideSearch && (
               <div className="flex-1 max-w-xl mx-4 md:mx-8">
                 <form className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -102,6 +102,12 @@ function Navbar({ cartCount = 0, user, setUser, searchQuery, setSearchQuery }) {
                       </div>
                       {/* Dropdown */}
                       <div className="absolute right-0 mt-4 w-56 bg-white rounded-2xl shadow-xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right z-50 border border-gray-100 translate-y-2 group-hover:translate-y-0">
+                        <Link to="/student/orders" className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors flex items-center gap-2 border-b border-gray-50">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                          </svg>
+                          My Orders
+                        </Link>
                         <button onClick={handleLogout} className="block w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors flex items-center gap-2">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -188,6 +194,10 @@ function Navbar({ cartCount = 0, user, setUser, searchQuery, setSearchQuery }) {
                 <Link to="/student/cart" onClick={() => setIsDrawerOpen(false)} className="flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-all">
                   <svg className="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
                   My Cart
+                </Link>
+                <Link to="/student/orders" onClick={() => setIsDrawerOpen(false)} className="flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-all">
+                  <svg className="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                  My Orders
                 </Link>
               </>
             ) : (

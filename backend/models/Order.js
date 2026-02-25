@@ -31,11 +31,17 @@ const orderSchema = mongoose.Schema({
         type: Number,
         required: true,
     },
-    status: {
+    orderStatus: {
         type: String,
         required: true,
-        default: 'Paid', 
-        enum: ['Paid', 'Preparing', 'Ready', 'Completed', 'Cancelled']
+        default: 'Preparing',
+        enum: ['Preparing', 'Ready', 'Completed', 'Cancelled']
+    },
+    paymentStatus: {
+        type: String,
+        required: true,
+        default: 'Paid',
+        enum: ['Pending', 'Paid']
     },
 }, {
     timestamps: true,

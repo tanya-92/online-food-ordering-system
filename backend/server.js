@@ -16,14 +16,10 @@ const app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(cors({
-  origin: [
-    "https://online-food-ordering-system-dusky.vercel.app",
-    "https://online-food-ordering-system-mwxrwsm2b.vercel.app"
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
+  origin: "*",
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+  allowedHeaders: ["Content-Type","Authorization"]
 }));
-app.options("*", cors());
 
 // Routes
 app.get('/', (req, res) => {

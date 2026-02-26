@@ -2,7 +2,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
-function Navbar({ cartCount = 0, user, setUser, searchQuery, setSearchQuery, hideSearch }) {
+function NavBar({ cartCount = 0, user, setUser, searchQuery, setSearchQuery, hideSearch }) {
   const navigate = useNavigate();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const userName = user?.name;
@@ -238,4 +238,4 @@ function Navbar({ cartCount = 0, user, setUser, searchQuery, setSearchQuery, hid
   );
 }
 
-export default Navbar;
+export default NavBar;

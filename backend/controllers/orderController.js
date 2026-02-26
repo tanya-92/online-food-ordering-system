@@ -27,10 +27,7 @@ const placeOrder = asyncHandler(async (req, res) => {
     for (const canteenId of Object.keys(ordersByCanteen)) {
         const canteenItems = ordersByCanteen[canteenId];
 
-
         const totalPrice = canteenItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-
-        // Find last order for this canteen created TODAY
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
 

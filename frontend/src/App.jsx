@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import Navbar from "./components/Navbar";
+import Navbar from "./components/NavBar";
 import LandingPage from "./pages/LandingPage";
 
 import Login from "./pages/Login";
@@ -99,7 +99,6 @@ function App() {
           <Route path="/owner/add-menu" element={<AddMenu />} />
           <Route path="/owner/orders" element={<Orders />} />
 
-          {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

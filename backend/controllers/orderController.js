@@ -1,5 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import Order from '../models/Order.js';
+import Item from '../models/Item.js';
+import Canteen from '../models/Canteen.js';
 
 const placeOrder = asyncHandler(async (req, res) => {
     const { items } = req.body;
@@ -27,7 +29,28 @@ const placeOrder = asyncHandler(async (req, res) => {
     for (const canteenId of Object.keys(ordersByCanteen)) {
         const canteenItems = ordersByCanteen[canteenId];
 
-        const totalPrice = canteenItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+        const validatedItems = [];
+        let totalPrice = 0;
+
+        for (const itemInput of canteenItems) {
+            const itemId = itemInput._id || itemInput.item || itemInput.id;
+            const dbItem = await Item.findById(itemId);
+
+            if (!dbItem) {
+                res.status(404);
+                throw new Error(`Item ${itemInput.name || 'Unknown'} not found in database`);
+            }
+
+            validatedItems.push({
+                name: dbItem.name,
+                quantity: itemInput.quantity,
+                price: dbItem.price,
+                image: dbItem.image,
+                item: dbItem._id
+            });
+            totalPrice += dbItem.price * itemInput.quantity;
+        }
+
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
 
@@ -48,13 +71,7 @@ const placeOrder = asyncHandler(async (req, res) => {
         const order = new Order({
             user: req.user._id,
             canteen: canteenId,
-            items: canteenItems.map(i => ({
-                name: i.name,
-                quantity: i.quantity,
-                price: i.price,
-                image: i.image,
-                item: i._id
-            })),
+            items: validatedItems,
             totalPrice,
             token: tokenNumber,
             orderStatus: 'Preparing',
@@ -89,6 +106,12 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
     const order = await Order.findById(req.params.id);
 
     if (order) {
+        const canteen = await Canteen.findById(order.canteen);
+        if (!canteen || canteen.owner.toString() !== req.user._id.toString()) {
+            res.status(401);
+            throw new Error('Not authorized to update this order');
+        }
+
         order.orderStatus = status;
         const updatedOrder = await order.save();
         res.json(updatedOrder);
@@ -103,6 +126,12 @@ const updatePaymentStatus = asyncHandler(async (req, res) => {
     const order = await Order.findById(req.params.id);
 
     if (order) {
+        const canteen = await Canteen.findById(order.canteen);
+        if (!canteen || canteen.owner.toString() !== req.user._id.toString()) {
+            res.status(401);
+            throw new Error('Not authorized to update this order');
+        }
+
         order.paymentStatus = status;
         const updatedOrder = await order.save();
         res.json(updatedOrder);
@@ -118,6 +147,12 @@ const deleteAllOrders = asyncHandler(async (req, res) => {
 
     console.log("DELETE ALL HIT");
     console.log("Canteen:", canteenId);
+
+    const canteen = await Canteen.findById(canteenId);
+    if (!canteen || canteen.owner.toString() !== req.user._id.toString()) {
+        res.status(401);
+        throw new Error('Not authorized to delete these orders');
+    }
 
     await Order.deleteMany({ canteen: canteenId });
 

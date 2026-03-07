@@ -41,19 +41,43 @@ A full-stack MERN application that allows users to browse canteens, explore menu
 
 ---
 
+## 👥 User Roles
+
+| Role | Description | Permissions |
+|-----|-------------|-------------|
+| 👤 User | Regular user who wants to order food | Browse canteens, view menus, add items to cart, place orders, make payments |
+| 🏪 Canteen Owner | Owner who manages their canteen and food items | Add/update food items, manage menu, view incoming orders |
+| 🛠 Admin | Platform administrator | Manage users, manage canteens, view all orders, control platform activities |
+
+---
+
 ## 📸 Screenshots
 
-### 🏠 Home Page
-![Home](screenshots/home.png)
+### 🏠 Landing Page
+![Landing Page](screenshots/1772543808740.jpg)
 
-### 🍽️ Canteen Listing
-![Canteen](screenshots/canteen.png)
+### 🍽️ Canteen Owner Dashboard
+![Canteen](screenshots/owner.jpg)
 
-### 🛒 Cart Page
-![Cart](screenshots/cart.png)
+### 🛒 Add Menu Page
+![Menu](screenshots/add%20menu.jpg)
 
-### ⚙️ Admin Dashboard
-![Admin](screenshots/admin.png)
+![Menu](screenshots/add%20menu2.jpg)
+
+### ⚙️ Student Dashboard
+![Student](screenshots/student.jpg)
+
+### ⚙️ Cart
+![Cart](screenshots/cart.jpg)
+
+### ⚙️ Confirm Order
+![Confirm Order](screenshots/order.jpg)
+
+### ⚙️ Live Orders
+![Live Order](screenshots/liveOrders.jpg)
+
+### ⚙️ Canteen Owner Dashboard
+![Live Order](screenshots/dashboard.jpg)
 
 ---
 

@@ -105,7 +105,7 @@ function AddCanteen() {
                     </div>
                 </div>
 
-                {/* <div>
+                <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
                     <input 
                         type="url" 
@@ -113,9 +113,8 @@ function AddCanteen() {
                         value={formData.image} 
                         onChange={handleChange}
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none" 
-                        placeholder="https://example.com/image.jpg"
                     />
-                </div> */}
+                </div>
 
                 <button 
                     type="submit" 

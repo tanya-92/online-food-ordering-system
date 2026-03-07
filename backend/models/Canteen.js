@@ -24,7 +24,6 @@ const canteenSchema = mongoose.Schema({
     },
     image: {
         type: String,
-        default: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?q=80&w=1000&auto=format&fit=crop',
     },
     rating: {
         type: Number,

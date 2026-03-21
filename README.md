@@ -5,7 +5,7 @@ A full-stack MERN application that allows users to browse canteens, explore menu
 </p>
 
 <p align="center">
-<a href="online-food-ordering-system-dusky.vercel.app"><strong>🌐 Live Demo</strong></a> •
+<a href="online-food-ordering-system-dusky.vercel.app"><strong>🌐 online-food-ordering-system-dusky.vercel.app</strong></a> •
 <a href="https://github.com/tanya-92/online-food-ordering-system"><strong>📂 Repository</strong></a>
 </p>
 
